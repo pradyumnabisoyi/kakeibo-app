@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Image, StyleSheet, Text, View } from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { getUser } from "../utils/storage";
@@ -10,9 +10,8 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
 
-  const [hasUser, setHasUser] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [showSplashAnim, setShowSplashAnim] = useState(true);
+  const [hasUser, setHasUser] = useState(null);
 
   const logoScale = useRef(new Animated.Value(0.65)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -20,9 +19,14 @@ export default function RootLayout() {
   const textTranslateY = useRef(new Animated.Value(12)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
 
-  // 1. Run 1.8s lightweight native launch animation
+  // 1. Play 100% full-screen animation FIRST, then reveal the app
   useEffect(() => {
     SplashScreen.hideAsync();
+
+    // Load user status in the background while animation plays
+    getUser().then((user) => {
+      setHasUser(!!user);
+    });
 
     Animated.sequence([
       Animated.parallel([
@@ -53,7 +57,7 @@ export default function RootLayout() {
       Animated.delay(650),
       Animated.timing(overlayOpacity, {
         toValue: 0,
-        duration: 350,
+        duration: 300,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -61,63 +65,58 @@ export default function RootLayout() {
     });
   }, []);
 
-  // 2. Single-check onboarding redirect (fixes double welcome setup)
+  // 2. Navigate once animation finishes and user state is loaded
   useEffect(() => {
-    getUser().then((user) => {
-      const exists = !!user;
-      setHasUser(exists);
-      setLoading(false);
+    if (showSplashAnim || hasUser === null) return;
 
-      const inOnboarding = segments[0] === "onboarding";
-      if (!exists && !inOnboarding) {
-        router.replace("/onboarding");
-      }
-    });
-  }, [segments]);
+    const inOnboarding = segments === "onboarding";
+    if (!hasUser && !inOnboarding) {
+      router.replace("/onboarding");
+    }
+  }, [showSplashAnim, hasUser, segments]);
 
-  return (
-    <View style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }} />
-
-      {showSplashAnim && (
+  // Show ONLY the full-screen animation first (prevents 65%/35% split)
+  if (showSplashAnim) {
+    return (
+      <Animated.View
+        style={[styles.splashFullScreen, { opacity: overlayOpacity }]}
+      >
+        <Animated.Image
+          source={require("../../assets/images/android-icon-foreground.png")}
+          style={[
+            styles.splashLogo,
+            {
+              opacity: logoOpacity,
+              transform: [{ scale: logoScale }],
+            },
+          ]}
+          resizeMode="contain"
+        />
         <Animated.View
-          pointerEvents="none"
-          style={[styles.splashOverlay, { opacity: overlayOpacity }]}
+          style={{
+            opacity: textOpacity,
+            transform: [{ translateY: textTranslateY }],
+            alignItems: "center",
+          }}
         >
-          <Animated.Image
-            source={require("../../assets/images/android-icon-foreground.png")}
-            style={[
-              styles.splashLogo,
-              {
-                opacity: logoOpacity,
-                transform: [{ scale: logoScale }],
-              },
-            ]}
-            resizeMode="contain"
-          />
-          <Animated.View
-            style={{
-              opacity: textOpacity,
-              transform: [{ translateY: textTranslateY }],
-              alignItems: "center",
-            }}
-          >
-            <Text style={styles.appTitle}>Kakeibo</Text>
-            <Text style={styles.tagline}>Powered by chatashali.com</Text>
-          </Animated.View>
+          <Text style={styles.appTitle}>Kakeibo</Text>
+          <Text style={styles.tagline}>Powered by chatashali.com</Text>
         </Animated.View>
-      )}
-    </View>
-  );
+      </Animated.View>
+    );
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 const styles = StyleSheet.create({
-  splashOverlay: {
-    ...StyleSheet.absoluteFillObject,
+  splashFullScreen: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
     backgroundColor: "#008E4B",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 999,
   },
   splashLogo: {
     width: 170,
