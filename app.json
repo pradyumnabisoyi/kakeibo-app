@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.chatashali.kakeibo",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#008E4B",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
