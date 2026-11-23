@@ -6,6 +6,7 @@ import {
   FlatList,
   StyleSheet,
   Alert,
+  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -177,6 +178,9 @@ export default function ReportViewScreen() {
               <p><strong>Total Expenses:</strong> Rs. ${totalExpense.toFixed(2)}</p>
               <p style="font-size:18px;"><strong>Remaining Balance:</strong> Rs. ${balance.toFixed(2)}</p>
             </div>
+            <p style="margin-top: 24px; font-size: 12px; color: #777; text-align: center;">
+              Generated via Kakeibo • <a href="https://chatashali.com" style="color: #1B5E20;">chatashali.com</a>
+            </p>
           </body>
         </html>
       `;
@@ -317,6 +321,14 @@ export default function ReportViewScreen() {
 
         <TouchableOpacity style={styles.pdfBtn} onPress={exportPDF}>
           <Ionicons name="document-text-outline" size={20} color="#fff" />
+          <Text style={styles.pdfBtnText}>Export PDF</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.footer}
+          onPress={() => Linking.openURL("https://chatashali.com")}
+        >
+          <Text style={styles.footerLink}>chatashali.com</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -381,4 +393,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   pdfBtnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  footer: {
+    alignSelf: "center",
+    marginTop: 10,
+    paddingVertical: 4,
+  },
+  footerLink: {
+    fontSize: 12,
+    color: "#1B5E20",
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
 });

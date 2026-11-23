@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Linking } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { File, Paths } from "expo-file-system";
@@ -118,6 +118,15 @@ export default function HomeScreen() {
         <Text style={styles.profileBtnText}>Edit Profile</Text>
       </TouchableOpacity>
 
+     <TouchableOpacity
+        style={styles.footer}
+        onPress={() => Linking.openURL("https://chatashali.com")}
+      >
+        <Text style={styles.footerText}>
+          Powered by <Text style={styles.footerLink}>chatashali.com</Text>
+        </Text>
+      </TouchableOpacity>
+
       <View style={styles.backupRow}>
         <TouchableOpacity style={styles.backupBtn} onPress={handleBackup}>
           <Ionicons name="cloud-upload-outline" size={18} color="#1565C0" />
@@ -185,4 +194,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   backupText: { color: "#1565C0", fontSize: 14, fontWeight: "600" },
+
+    footer: {
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  footerText: {
+    fontSize: 12,
+    color: "#777",
+    textAlign: "center",
+  },
+  footerLink: {
+    color: "#1B5E20",
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
 });

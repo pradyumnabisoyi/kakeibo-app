@@ -65,6 +65,15 @@ export default function OnboardingScreen() {
       return;
     }
 
+    const cleanedMobile = mobile.trim().replace(/\D/g, "");
+    if (cleanedMobile.length < 9 || cleanedMobile.length > 11) {
+      Alert.alert(
+        "Invalid Mobile Number",
+        "Please enter a valid mobile number between 9 and 11 digits.",
+      );
+      return;
+    }
+
     const trimmedEmail = email.trim();
     if (trimmedEmail.length > 0 && !EMAIL_REGEX.test(trimmedEmail)) {
       Alert.alert(
@@ -78,7 +87,7 @@ export default function OnboardingScreen() {
     try {
       await saveUser({
         name: name.trim(),
-        mobile: mobile.trim(),
+        mobile: cleanedMobile,
         email: trimmedEmail,
         gender,
         birthdate: birthdate ? formatDate(birthdate) : "",
@@ -115,7 +124,8 @@ export default function OnboardingScreen() {
         style={styles.input}
         placeholder="Mobile Number *"
         placeholderTextColor="#888"
-        keyboardType="phone-pad"
+        keyboardType="number-pad"
+        maxLength={11}
         value={mobile}
         onChangeText={setMobile}
       />
