@@ -14,6 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { getTransactions, deleteTransaction, getUser } from "../utils/storage";
+import * as FileSystem from "expo-file-system/legacy";
+
 
 const formatDate = (d) => d.toISOString().split("T")[0];
 
@@ -128,6 +130,31 @@ export default function ReportViewScreen() {
     return `${formatDate(startDate)} to ${formatDate(endDate)}`;
   }, [mode, startDate, endDate]);
 
+  const MONTHS = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+
+  const formatPart = (d) => {
+    const year = d.getFullYear();
+    const month = MONTHS[d.getMonth()];
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}_${month}_${day}`;
+  };
+
+  const getPdfFileName = () => {
+    const year = startDate.getFullYear();
+    const month = MONTHS[startDate.getMonth()];
+
+    if (mode === "annually") {
+      return `kakeibo_annually_${year}.pdf`;
+    }
+    if (mode === "monthly") {
+      return `kakeibo_monthly_${year}_${month}.pdf`;
+    }
+    return `kakeibo_${formatPart(startDate)}_${formatPart(endDate)}.pdf`;
+  };
+
   const exportPDF = async () => {
     try {
       const user = await getUser();
@@ -185,7 +212,25 @@ export default function ReportViewScreen() {
         </html>
       `;
 
-      await Print.printAsync({ html });
+      const { base64 } = await Print.printToFileAsync({
+        html,
+        base64: true,
+      });
+
+      const fileName = getPdfFileName();
+      const newUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      await FileSystem.writeAsStringAsync(newUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      await Sharing.shareAsync(newUri, {
+        mimeType: "application/pdf",
+        dialogTitle: `Save or Share ${fileName}`,
+        UTI: "com.adobe.pdf",
+      });
+
+
     } catch (err) {
       console.error("PDF Export Error:", err);
       Alert.alert("Export Error", err?.message || String(err));

@@ -32,3 +32,5 @@ Scan the QR code using the **Expo Go** app on Android.
 - git rm -rf assets/expo.icon assets/images/tabIcons
 - git rm -f assets/images/expo-badge-white.png assets/images/expo-badge.png assets/images/expo-logo.png assets/images/logo-glow.png assets/images/react-logo.png assets/images/react-logo@2x.png assets/images/react-logo@3x.png assets/images/tutorial-web.png
 - eas build -p android --profile preview
+- eas build -p android --profile production
+- [chatashali.com/kakeibo-privacy-policy](https://chatashali.com/kakeibo-privacy-policy/)

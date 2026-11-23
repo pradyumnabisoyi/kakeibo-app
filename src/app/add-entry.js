@@ -126,6 +126,7 @@ export default function AddEntryScreen() {
       <TextInput
         style={styles.input}
         placeholder="Item Name"
+        placeholderTextColor="#888"
         value={itemName}
         onChangeText={handleNameChange}
       />
@@ -170,6 +171,7 @@ export default function AddEntryScreen() {
       <TextInput
         style={styles.input}
         placeholder="Amount"
+        placeholderTextColor="#888"
         keyboardType="numeric"
         value={amount}
         onChangeText={setAmount}
