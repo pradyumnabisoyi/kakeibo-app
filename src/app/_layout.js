@@ -11,7 +11,8 @@ export default function RootLayout() {
   const segments = useSegments();
 
   const [showSplashAnim, setShowSplashAnim] = useState(true);
-  const [hasUser, setHasUser] = useState(null);
+  const [userChecked, setUserChecked] = useState(false);
+  const [hasUser, setHasUser] = useState(false);
 
   const logoScale = useRef(new Animated.Value(0.65)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -19,13 +20,13 @@ export default function RootLayout() {
   const textTranslateY = useRef(new Animated.Value(12)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
 
-  // 1. Play 100% full-screen animation FIRST, then reveal the app
+  // 1. Play 1.8s launch animation AND check user in parallel
   useEffect(() => {
     SplashScreen.hideAsync();
 
-    // Load user status in the background while animation plays
     getUser().then((user) => {
       setHasUser(!!user);
+      setUserChecked(true);
     });
 
     Animated.sequence([
@@ -65,62 +66,70 @@ export default function RootLayout() {
     });
   }, []);
 
-  // 2. Navigate once animation finishes and user state is loaded
-    // 2. Re-check user whenever navigation changes (after splash finishes)
+  // 2. Re-check user whenever navigation changes (runs behind splash on initial load)
   useEffect(() => {
-    if (showSplashAnim) return;
+    if (!userChecked) return;
 
     getUser().then((user) => {
       const exists = !!user;
       setHasUser(exists);
 
-      const inOnboarding = segments === "onboarding";
+      const inOnboarding = segments[0] === "onboarding";
       if (!exists && !inOnboarding) {
         router.replace("/onboarding");
       }
     });
-  }, [showSplashAnim, segments]);
+  }, [userChecked, segments]);
 
+  return (
+    <View style={{ flex: 1, backgroundColor: "#008E4B" }}>
+      {userChecked && <Stack screenOptions={{ headerShown: false }} />}
 
-  // Show ONLY the full-screen animation first (prevents 65%/35% split)
-  if (showSplashAnim) {
-    return (
-      <Animated.View
-        style={[styles.splashFullScreen, { opacity: overlayOpacity }]}
-      >
-        <Animated.Image
-          source={require("../../assets/images/android-icon-foreground.png")}
-          style={[
-            styles.splashLogo,
-            {
-              opacity: logoOpacity,
-              transform: [{ scale: logoScale }],
-            },
-          ]}
-          resizeMode="contain"
-        />
-        <Animated.View
-          style={{
-            opacity: textOpacity,
-            transform: [{ translateY: textTranslateY }],
-            alignItems: "center",
-          }}
-        >
-          <Text style={styles.appTitle}>Kakeibo</Text>
-          <Text style={styles.tagline}>Powered by chatashali.com</Text>
-        </Animated.View>
-      </Animated.View>
-    );
-  }
-
-  return <Stack screenOptions={{ headerShown: false }} />;
+      {showSplashAnim && (
+        <View style={styles.splashBackdrop} pointerEvents="none">
+          <Animated.View
+            style={[styles.splashFullScreen, { opacity: overlayOpacity }]}
+          >
+            <Animated.Image
+              source={require("../../assets/images/android-icon-foreground.png")}
+              style={[
+                styles.splashLogo,
+                {
+                  opacity: logoOpacity,
+                  transform: [{ scale: logoScale }],
+                },
+              ]}
+              resizeMode="contain"
+            />
+            <Animated.View
+              style={{
+                opacity: textOpacity,
+                transform: [{ translateY: textTranslateY }],
+                alignItems: "center",
+              }}
+            >
+              <Text style={styles.appTitle}>Kakeibo</Text>
+              <Text style={styles.tagline}>Powered by chatashali.com</Text>
+            </Animated.View>
+          </Animated.View>
+        </View>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+  splashBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    elevation: 999,
+  },
   splashFullScreen: {
     flex: 1,
-    width: "100%",
-    height: "100%",
     backgroundColor: "#008E4B",
     justifyContent: "center",
     alignItems: "center",
