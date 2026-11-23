@@ -12,18 +12,16 @@ export default function RootLayout() {
 
   useEffect(() => {
     getUser().then((user) => {
-      setHasUser(!!user);
+      const exists = !!user;
+      setHasUser(exists);
       setLoading(false);
+
+      const inOnboarding = segments === "onboarding";
+      if (!exists && !inOnboarding) {
+        router.replace("/onboarding");
+      }
     });
   }, [segments]);
-
-  useEffect(() => {
-    if (loading) return;
-    const inOnboarding = segments === "onboarding";
-    if (!hasUser && !inOnboarding) {
-      router.replace("/onboarding");
-    }
-  }, [loading, hasUser, segments]);
 
   const HomeButton = () => (
     <TouchableOpacity

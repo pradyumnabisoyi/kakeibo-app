@@ -24,7 +24,7 @@ export default function HomeScreen() {
   const handleBackup = async () => {
     try {
       const json = await exportBackupData();
-      const dateStamp = new Date().toISOString().split("T");
+      const dateStamp = new Date().toISOString().split("T")[0];
       const backupFile = new File(
         Paths.cache,
         `Kakeibo_backup_${dateStamp}.json`,

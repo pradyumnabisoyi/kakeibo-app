@@ -14,7 +14,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { getTransactions, deleteTransaction, getUser } from "../utils/storage";
 
-const formatDate = (d) => d.toISOString().split("T");
+const formatDate = (d) => d.toISOString().split("T")[0];
 
 export default function ReportViewScreen() {
   const { mode } = useLocalSearchParams();

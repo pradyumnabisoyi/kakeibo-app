@@ -11,7 +11,18 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { getUser, saveUser } from "../utils/storage";
 
-const formatDate = (d) => d.toISOString().split("T");
+const formatDate = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (dateStr) => {
+  const [y, m, d] = dateStr.split("T")[0].split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function OnboardingScreen() {
@@ -25,6 +36,7 @@ export default function OnboardingScreen() {
   const [gender, setGender] = useState("");
   const [birthdate, setBirthdate] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (isEditing) {
@@ -44,6 +56,7 @@ export default function OnboardingScreen() {
   }, [isEditing]);
 
   const handleSave = async () => {
+    if (saving) return;
     if (!name.trim() || !mobile.trim()) {
       Alert.alert(
         "Required",
@@ -61,19 +74,24 @@ export default function OnboardingScreen() {
       return;
     }
 
-    await saveUser({
-      name: name.trim(),
-      mobile: mobile.trim(),
-      email: trimmedEmail,
-      gender,
-      birthdate: birthdate ? formatDate(birthdate) : "",
-    });
+    setSaving(true);
+    try {
+      await saveUser({
+        name: name.trim(),
+        mobile: mobile.trim(),
+        email: trimmedEmail,
+        gender,
+        birthdate: birthdate ? formatDate(birthdate) : "",
+      });
 
-    if (isEditing) {
-      Alert.alert("Saved", "Profile updated!");
-      router.back();
-    } else {
-      router.replace("/");
+      if (isEditing) {
+        Alert.alert("Saved", "Profile updated!");
+        router.back();
+      } else {
+        router.replace("/");
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -83,24 +101,30 @@ export default function OnboardingScreen() {
         {isEditing ? "Edit Profile" : "Enter Your Details"}
       </Text>
 
+      <Text style={styles.fieldLabel}>Name</Text>
       <TextInput
         style={styles.input}
+        placeholderTextColor="#888"
         placeholder="Full Name *"
         value={name}
         onChangeText={setName}
       />
 
+      <Text style={styles.fieldLabel}>Mobile</Text>
       <TextInput
         style={styles.input}
         placeholder="Mobile Number *"
+        placeholderTextColor="#888"
         keyboardType="phone-pad"
         value={mobile}
         onChangeText={setMobile}
       />
 
+      <Text style={styles.fieldLabel}>Email</Text>
       <TextInput
         style={styles.input}
         placeholder="Email (e.g., user@example.com)"
+        placeholderTextColor="#888"
         keyboardType="email-address"
         autoCapitalize="none"
         value={email}
