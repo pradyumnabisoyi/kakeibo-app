@@ -161,7 +161,7 @@ export default function ReportViewScreen() {
         <html>
           <body style="font-family: sans-serif; padding: 24px;">
             <h1 style="color: #1B5E20;">Kakeibo Financial Report</h1>
-            <p><strong>Name:</strong> ${user?.name || "-"} | <strong>Mobile:</strong> ${user?.mobile || "-"}</p>
+            <p><strong>Name:</strong> ${user?.name || "-"}</p>
             <p><strong>Period:</strong> ${periodLabel}</p>
             <table border="1" cellspacing="0" cellpadding="8" style="width:100%; border-collapse:collapse; border-color:#ddd;">
               <thead style="background:#2E7D32; color:#fff;">

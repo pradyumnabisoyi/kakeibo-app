@@ -66,14 +66,21 @@ export default function RootLayout() {
   }, []);
 
   // 2. Navigate once animation finishes and user state is loaded
+    // 2. Re-check user whenever navigation changes (after splash finishes)
   useEffect(() => {
-    if (showSplashAnim || hasUser === null) return;
+    if (showSplashAnim) return;
 
-    const inOnboarding = segments === "onboarding";
-    if (!hasUser && !inOnboarding) {
-      router.replace("/onboarding");
-    }
-  }, [showSplashAnim, hasUser, segments]);
+    getUser().then((user) => {
+      const exists = !!user;
+      setHasUser(exists);
+
+      const inOnboarding = segments === "onboarding";
+      if (!exists && !inOnboarding) {
+        router.replace("/onboarding");
+      }
+    });
+  }, [showSplashAnim, segments]);
+
 
   // Show ONLY the full-screen animation first (prevents 65%/35% split)
   if (showSplashAnim) {
